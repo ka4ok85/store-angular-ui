@@ -5,10 +5,14 @@ angular.module( 'store.login', [
 app.config(function($stateProvider) {
   console.log('login config');
   
+
   $stateProvider.state('login', {
 	    url: '/login',
 	    controller: 'LoginCtrl',
-	    templateUrl: 'ui/login.html'
+	    templateUrl: 'ui/login.html',
+	    data: {
+	    	'requiresLogin': false
+	    }
   });
 })
 
@@ -35,11 +39,11 @@ app.controller('LoginCtrl', function($scope, $http, $location, store, $state, jw
             var tokenPayload = jwtHelper.decodeToken(response.token);
             console.log(tokenPayload);
             console.log("Token Username:"+tokenPayload.sub);
-            console.log("Token User ID:"+tokenPayload.sub_id);
+            console.log("Token User ID:"+tokenPayload.user_id);
             console.log("Token StoreId:"+tokenPayload.store);
                 
             loggedUserService.prepForBroadcast(tokenPayload.sub, tokenPayload.store_name);
-            $state.go('restatement_jobs', { 'userId':tokenPayload.sub_id, 'storeId':tokenPayload.store });
+            $state.go('locations', { 'userId':tokenPayload.user_id, 'storeId':tokenPayload.store });
         }, function(response) {
             console.log('Wrong credentials.');
     	    $scope.errors = {};

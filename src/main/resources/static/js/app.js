@@ -17,6 +17,7 @@ var app = angular.module('storeApp', [
                                           'ui.router',
                                           'store.login',
                                           'store.product',
+                                          'store.location',
                                           'angular-jwt',
                                           'angular-storage'
                                           ]
@@ -52,18 +53,17 @@ app.factory('loggedUserService', function($rootScope) {
 app.config( function myAppConfig ($urlRouterProvider, $routeProvider, jwtInterceptorProvider, $httpProvider, $stateProvider, httpRequestInterceptorCacheBusterProvider) {
     console.log('app config start');  
 
-    httpRequestInterceptorCacheBusterProvider.setMatchlist([/.*ui.*/],true);
-
+    httpRequestInterceptorCacheBusterProvider.setMatchlist([/.*ui\//], true);
     jwtInterceptorProvider.tokenGetter = function(store) {
 		console.log("stored token " + store.get('jwt'));
 	    return store.get('jwt');
 	}
-
+    
 	$stateProvider.state('restatement_jobs', {
 		    url: '/ui/restatement_jobs',
 		    cache: false,
 		    controller: 'ListCtrl',
-		    templateUrl:function ($stateParams){
+		    templateUrl:function ($stateParams) {
 		        return 'ui/restatement_jobs' + '.html';
 		    },
 		    params: {
@@ -96,7 +96,7 @@ app.config( function myAppConfig ($urlRouterProvider, $routeProvider, jwtInterce
 		        'jobId': null
 		    }
 	});
-
+	
 	$httpProvider.interceptors.push('jwtInterceptor');
 })
 
@@ -106,17 +106,17 @@ app.run(function($rootScope, $state, store, jwtHelper) {
   if (!store.get('jwt') || jwtHelper.isTokenExpired(store.get('jwt'))) {
 	  console.log('jwt does not exist or expired');
 	  // force login
+	  console.log('force login 1');
     $state.go('login');
+    console.log('force login 2');
   } else {
     // redirect to dashboard
     $state.go('products');
   }
 	
-  /*
+  // logic for verifying user is logged in when jumping between states
   $rootScope.$on('$stateChangeStart', function(e, to) {
-	console.log('stateChangeStart');
     if (to.data && to.data.requiresLogin) {
-      console.log('to.data && to.data.requiresLogin - passed');
       if (!store.get('jwt') || jwtHelper.isTokenExpired(store.get('jwt'))) {
         console.log('stateChangeStart - force login');
         e.preventDefault();
@@ -124,7 +124,7 @@ app.run(function($rootScope, $state, store, jwtHelper) {
       }
     }
   });
-  */
+
 })
 
 app.controller( 'AppCtrl', function AppCtrl ($scope, $location, $state, store, loggedUserService ) {
